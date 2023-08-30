@@ -7,7 +7,8 @@ The App is written to integrate with Cisco Vulnerability Management
 ### Requirements
 The App supports:
 - ForeScout CounterACT 8.4
-- ForeScout eyeExtend Connect <???>
+- ForeScout eyeExtend Connect 2.0.15
+- ForeScout Connect Plugin 1.7.4
 
 ### ForeScout Documentation Portal
 To access ForeScout documentation, please refer to [https://docs.forescout.com/](https://docs.forescout.com/)

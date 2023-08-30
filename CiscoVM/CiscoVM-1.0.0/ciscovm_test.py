@@ -28,7 +28,7 @@ logging.debug("===> Starting CiscoVM Test Script")
 # Defining Variables
 response = dict()
 
-# TODO: Dummy test
+# TODO: Dummy test will be replaced
 response["succeeded"] = True
 response["properties"] = params
 logging.debug(f"Received params: {params}")
