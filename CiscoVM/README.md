@@ -31,6 +31,6 @@ The user should set IP range to apply policies, the rules for the properties wil
 
 ### Logs
 ```
-ssh <USER>@<FORESCOUT_IP>
+ssh <USER>@<FORESCOUT_PLATFORM_IP>
 tail -n50 /usr/local/forescout/plugin/connect_module/python_logs/python_server.log
 ```

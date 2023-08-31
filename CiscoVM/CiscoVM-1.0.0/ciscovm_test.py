@@ -28,9 +28,26 @@ logging.debug("===> Starting CiscoVM Test Script")
 # Defining Variables
 response = dict()
 
-# TODO: Dummy test will be replaced
-response["succeeded"] = True
-response["properties"] = params
-logging.debug(f"Received params: {params}")
+try:
+    url = params["connect_ciscovm_url"]
+    token = params["connect_ciscovm_token"]
+    uid = params["connect_ciscovm_uid"]
+    client = ciscovm_http_client.CVMHTTPClient(url=url, auth_token=token, uid=uid)
+    is_connected = client.ping()
+    if is_connected:
+        response = {
+            "succeeded": True,
+            "result_msg": f"Connected to '{url}'.",
+        }
+    else:
+        response = {
+            "succeeded": False,
+            "result_msg": f"Couldn't connected to '{url}'.",
+        }
+except Exception as e:
+    response = {
+        "succeeded": False,
+        "result_msg": f"Test error: '{e}'.",
+    }
 
 logging.debug("===> End CiscoVM Test Script")
