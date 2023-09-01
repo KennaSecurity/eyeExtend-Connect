@@ -32,22 +32,22 @@ try:
     url = params["connect_ciscovm_url"]
     token = params["connect_ciscovm_token"]
     uid = params["connect_ciscovm_uid"]
-    client = ciscovm_http_client.CVMHTTPClient(url=url, auth_token=token, uid=uid)
+    client = ciscovm_helpers.CVMHTTPClient(url=url, auth_token=token, uid=uid)
     is_connected = client.ping()
     if is_connected:
         response = {
             "succeeded": True,
-            "result_msg": f"Connected to '{url}'.",
+            "result_msg": f"Connected to '{client.full_url}'.",
         }
     else:
         response = {
             "succeeded": False,
-            "result_msg": f"Couldn't connected to '{url}'.",
+            "result_msg": f"Couldn't connected to '{client.full_url}'.",
         }
 except Exception as e:
     response = {
         "succeeded": False,
-        "result_msg": f"Test error: '{e}'.",
+        "result_msg": str(e),
     }
 
 logging.debug("===> End CiscoVM Test Script")

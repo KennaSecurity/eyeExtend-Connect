@@ -45,14 +45,20 @@ class CVMHTTPClient:
         }
 
     def ping(self) -> bool:
-        """Check connection to the service"""
+        """Check connection to the service
+
+        return: is connection exist or not
+        """
         response = requests.post(self.full_url, headers=self._generate_headers())
         if response.status_code == 200:
             return True
         return False
 
-    def post(self, data: dict):
-        """Send data"""
+    def post(self, data: dict) -> bool:
+        """Send data
+
+        return: was data sent successfully or not
+        """
         response = requests.post(
             self.full_url,
             headers=self._generate_headers(self.POST_EVENT_TYPE),
@@ -60,6 +66,31 @@ class CVMHTTPClient:
         )
         if response.status_code == 200:
             logging.debug(f"Data was sent to {self.full_url}")
+            return True
         else:
             logging.error(f"Problem to send data to '{self.full_url}'. "
                           f"Response: {response.status_code} - {response.text}")
+        return False
+
+
+# class DataGenerator:
+#     """Generate output data"""
+#
+#     FS_PROP_FOR_CVM = (
+#         "mac",
+#         "ip"
+#         "dhcp_hostname",
+#         "vendor_classification",
+#         "vendor",
+#         "prim_classification",
+#     )
+#
+#     def __int__(self, fs_data: dict):
+#         self._fs_data = fs_data
+#
+#     def generate(self) -> str:
+#         """Generate output JSON"""
+#         data = dict()
+#         for field_name in self.FS_PROP_FOR_CVM:
+#             data[field_name] = self._fs_data.get(field_name)
+#         return json.dumps(data)
