@@ -25,22 +25,25 @@ import logging
 logging.debug("===> Starting CiscoVM Script")
 
 # Defining Variables
-response = dict(properties=dict(connect_ciscovm_exported=True))
-
-
-url = params["connect_ciscovm_url"]
-token = params["connect_ciscovm_token"]
-uid = params["connect_ciscovm_uid"]
+response = dict()
+properties = dict(connect_ciscovm_exported="false")
 
 try:
-    logging.debug(f"PARAMS: {params}")
-    client = ciscovm_helpers.CVMHTTPClient(url=url, auth_token=token, uid=uid)
-    was_sent = client.post(json=ciscovm_helpers.DataGenerator(fs_data=params).generate())
-    if not was_sent:
-        response["properties"]["connect_ciscovm_exported"] = False
-        response["error"] = "Couldn't send data."
+    url = params["connect_ciscovm_url"]
+    token = params["connect_ciscovm_token"]
+    uid = params["connect_ciscovm_uid"]
+    client = ciscovm_helpers.CVMHTTPClient(url, uid, token)
+    payload = ciscovm_helpers.DataGenerator(params).generate()
+    logging.debug(f"Output data: {payload}")
+    was_sent = client.post(payload)
+    if was_sent:
+        properties["connect_ciscovm_exported"] = "true"
+    else:
+        response["error"] = "Couldn't send data"
 except Exception as e:
-    response["properties"]["connect_ciscovm_exported"] = False
     response["error"] = str(e)
+    logging.error(str(e))
+finally:
+    response["properties"] = properties
 
 logging.debug("===> End CiscoVM Script")

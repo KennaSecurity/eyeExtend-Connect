@@ -21,7 +21,9 @@ SOFTWARE.
 """
 
 import logging
+import functools
 import json
+from datetime import datetime, timezone
 
 import requests
 
@@ -44,16 +46,30 @@ class CVMHTTPClient:
             "Authorization": f"Bearer {self.auth_token}",
         }
 
-    def ping(self) -> bool:
-        """Check connection to the service
+    def error_handler(func):
+        """Handle any request errors and logging them."""
+        @functools.wraps(func)
+        def wrap(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                logging.error(f"Request exception: {e}")
+            return False
+        return wrap
 
-        return: is connection exist or not
+    @error_handler
+    def ping(self) -> bool:
+        """Check connection to the service.
+
+        return: does connection exist or not
         """
         response = requests.post(self.full_url, headers=self._generate_headers())
+        response.raise_for_status()
         if response.status_code == 200:
             return True
         return False
 
+    @error_handler
     def post(self, data: dict) -> bool:
         """Send data
 
@@ -64,33 +80,34 @@ class CVMHTTPClient:
             headers=self._generate_headers(self.POST_EVENT_TYPE),
             data=json.dumps(data),
         )
+        response.raise_for_status()
         if response.status_code == 200:
             logging.debug(f"Data was sent to {self.full_url}")
             return True
-        else:
-            logging.error(f"Problem to send data to '{self.full_url}'. "
-                          f"Response: {response.status_code} - {response.text}")
         return False
 
 
-# class DataGenerator:
-#     """Generate output data"""
-#
-#     FS_PROP_FOR_CVM = (
-#         "mac",
-#         "ip"
-#         "dhcp_hostname",
-#         "vendor_classification",
-#         "vendor",
-#         "prim_classification",
-#     )
-#
-#     def __int__(self, fs_data: dict):
-#         self._fs_data = fs_data
-#
-#     def generate(self) -> str:
-#         """Generate output JSON"""
-#         data = dict()
-#         for field_name in self.FS_PROP_FOR_CVM:
-#             data[field_name] = self._fs_data.get(field_name)
-#         return json.dumps(data)
+class DataGenerator:
+    """Generate output data"""
+
+    TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    FS_PROP_FOR_CVM = (
+        "mac",
+        "ip",
+        "dhcp_hostname",
+        "vendor_classification",
+        "vendor",
+        "prim_classification",
+    )
+
+    def __init__(self, fs_data: dict):
+        self._fs_data = fs_data
+
+    def generate(self) -> dict:
+        """Generate output JSON"""
+        data = dict()
+        for field_name in self.FS_PROP_FOR_CVM:
+            data[field_name] = self._fs_data.get(field_name)
+
+        data["last_seen_time"] = datetime.now(timezone.utc).strftime(self.TS_FORMAT)
+        return data
