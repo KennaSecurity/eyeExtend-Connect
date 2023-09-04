@@ -40,8 +40,7 @@ class CVMHTTPClient:
     def _generate_headers(self, event_type: str = CHECK_EVENT_TYPE) -> dict:
         """Generate request headers"""
         return {
-            # TODO: CHANGE HEADER!!!!!
-            "X-Orbital-Event": event_type,
+            "X-Forescout-Event": event_type,
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.auth_token}",
         }
