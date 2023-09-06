@@ -26,13 +26,24 @@ logging.debug("===> Starting CiscoVM Script")
 
 # Defining Variables
 response = dict()
+properties = dict(connect_ciscovm_exported="false")
 
-
-# TODO: Dummy logic will be replaced
-response["succeeded"] = True
-properties = dict()
-properties["connect_ciscovm_exported"] = "DUMMY"
-response["properties"] = properties
-logging.debug(f"=======>>>>> CiscoVM properties returned: {properties}")
+try:
+    url = params["connect_ciscovm_url"]
+    token = params["connect_ciscovm_token"]
+    uid = params["connect_ciscovm_uid"]
+    client = ciscovm_helpers.CVMHTTPClient(url, uid, token)
+    payload = ciscovm_helpers.DataGenerator(params).generate()
+    logging.debug(f"Output data: {payload}")
+    was_sent, msg = client.post(payload)
+    if was_sent:
+        properties["connect_ciscovm_exported"] = "true"
+    else:
+        response["error"] = msg
+except Exception as e:
+    response["error"] = str(e)
+    logging.error(str(e))
+finally:
+    response["properties"] = properties
 
 logging.debug("===> End CiscoVM Script")
