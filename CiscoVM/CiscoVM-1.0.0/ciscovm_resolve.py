@@ -35,11 +35,11 @@ try:
     client = ciscovm_helpers.CVMHTTPClient(url, uid, token)
     payload = ciscovm_helpers.DataGenerator(params).generate()
     logging.debug(f"Output data: {payload}")
-    was_sent = client.post(payload)
+    was_sent, msg = client.post(payload)
     if was_sent:
         properties["connect_ciscovm_exported"] = "true"
     else:
-        response["error"] = "Couldn't send data"
+        response["error"] = msg
 except Exception as e:
     response["error"] = str(e)
     logging.error(str(e))

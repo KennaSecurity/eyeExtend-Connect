@@ -33,7 +33,7 @@ try:
     token = params["connect_ciscovm_token"]
     uid = params["connect_ciscovm_uid"]
     client = ciscovm_helpers.CVMHTTPClient(url=url, auth_token=token, uid=uid)
-    is_connected = client.ping()
+    is_connected, msg = client.ping()
     if is_connected:
         response = {
             "succeeded": True,
@@ -42,7 +42,7 @@ try:
     else:
         response = {
             "succeeded": False,
-            "result_msg": f"Couldn't connected to '{client.full_url}'.",
+            "result_msg": msg,
         }
 except Exception as e:
     response = {

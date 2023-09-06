@@ -45,45 +45,40 @@ class CVMHTTPClient:
             "Authorization": f"Bearer {self.auth_token}",
         }
 
-    def error_handler(func):
+    def response_handler(func):
         """Handle any request errors and logging them."""
         @functools.wraps(func)
         def wrap(self, *args, **kwargs):
+            msg = ""
             try:
-                return func(self, *args, **kwargs)
+                response = func(self, *args, **kwargs)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    logging.debug(f"Data was sent to {self.full_url}")
+                    return True, msg
+                else:
+                    msg = (f"Status code: {response.status_code} "
+                           f"Response msg: {response.text}")
             except Exception as e:
-                logging.error(f"Request exception: {e}")
-            return False
+                msg = str(e)
+
+            logging.debug(msg)
+            return False, msg
         return wrap
 
-    @error_handler
-    def ping(self) -> bool:
-        """Check connection to the service.
+    @response_handler
+    def ping(self) -> requests.Response:
+        """Check connection to the service."""
+        return requests.post(self.full_url, headers=self._generate_headers())
 
-        return: does connection exist or not
-        """
-        response = requests.post(self.full_url, headers=self._generate_headers())
-        response.raise_for_status()
-        if response.status_code == 200:
-            return True
-        return False
-
-    @error_handler
-    def post(self, data: dict) -> bool:
-        """Send data
-
-        return: was data sent successfully or not
-        """
-        response = requests.post(
+    @response_handler
+    def post(self, data: dict) -> requests.Response:
+        """Send data"""
+        return requests.post(
             self.full_url,
             headers=self._generate_headers(self.POST_EVENT_TYPE),
             data=json.dumps(data),
         )
-        response.raise_for_status()
-        if response.status_code == 200:
-            logging.debug(f"Data was sent to {self.full_url}")
-            return True
-        return False
 
 
 class DataGenerator:
@@ -108,5 +103,7 @@ class DataGenerator:
         for field_name in self.FS_PROP_FOR_CVM:
             data[field_name] = self._fs_data.get(field_name)
 
-        data["last_seen_time"] = datetime.now(timezone.utc).strftime(self.TS_FORMAT)
+        data["last_seen_time"] = (
+            datetime.now(timezone.utc).strftime(self.TS_FORMAT)
+        )
         return data
