@@ -26,6 +26,7 @@ import json
 from datetime import datetime, timezone
 
 import requests
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 class CVMHTTPClient:
@@ -48,6 +49,10 @@ class CVMHTTPClient:
     def response_handler(func):
         """Handle any request errors and logging them."""
         @functools.wraps(func)
+        @retry(
+            stop=stop_after_attempt(3),  # Number of retries (3 in this case)
+            wait=wait_exponential(multiplier=1, max=10),  # Exponential backoff settings
+        )
         def wrap(self, *args, **kwargs):
             msg = ""
             try:
@@ -59,11 +64,10 @@ class CVMHTTPClient:
                 else:
                     msg = (f"Status code: {response.status_code} "
                            f"Response msg: {response.text}")
+                    return False, msg
             except Exception as e:
-                msg = str(e)
-
-            logging.debug(msg)
-            return False, msg
+                logging.debug(str(e))
+                raise e
         return wrap
 
     @response_handler
