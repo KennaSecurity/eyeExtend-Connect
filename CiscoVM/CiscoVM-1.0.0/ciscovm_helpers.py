@@ -64,6 +64,7 @@ class CVMHTTPClient:
                 else:
                     msg = (f"Status code: {response.status_code} "
                            f"Response msg: {response.text}")
+                    logging.debug(msg)
                     return False, msg
             except Exception as e:
                 logging.debug(str(e))
