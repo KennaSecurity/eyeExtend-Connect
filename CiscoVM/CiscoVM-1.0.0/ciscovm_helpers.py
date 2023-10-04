@@ -26,17 +26,28 @@ import json
 from datetime import datetime, timezone
 
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 class CVMHTTPClient:
     """Cisco Vulnerability Management HTTP client"""
     CHECK_EVENT_TYPE = "ping"
     POST_EVENT_TYPE = "job-results"
+    # Create a custom Retry object with max retries set to 3
+    RETRY_STRATEGY = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[408, 429, 500, 502, 503, 504],
+        allowed_methods=["POST"]
+    )
 
     def __init__(self, url: str, uid: str, auth_token: str):
         self.full_url = f"{url.strip('/')}/{uid.strip('/').strip()}"
         self.auth_token = auth_token.strip()
+        # Create a session and mount the adapter
+        self.session = requests.Session()
+        self.session.mount("https://", requests.adapters.HTTPAdapter(max_retries=self.RETRY_STRATEGY))
 
     def _generate_headers(self, event_type: str = CHECK_EVENT_TYPE) -> dict:
         """Generate request headers"""
@@ -49,15 +60,10 @@ class CVMHTTPClient:
     def response_handler(func):
         """Handle any request errors and logging them."""
         @functools.wraps(func)
-        @retry(
-            stop=stop_after_attempt(3),  # Number of retries (3 in this case)
-            wait=wait_exponential(multiplier=1, max=10),  # Exponential backoff settings
-        )
         def wrap(self, *args, **kwargs):
             msg = ""
             try:
                 response = func(self, *args, **kwargs)
-                response.raise_for_status()
                 if response.status_code == 200:
                     logging.debug(f"Data was sent to {self.full_url}")
                     return True, msg
@@ -65,26 +71,23 @@ class CVMHTTPClient:
                     msg = (f"Status code: {response.status_code} "
                            f"Response msg: {response.text}")
                     logging.debug(msg)
-                    return False, msg
-            except Exception as e:
-                logging.debug(str(e))
-                raise e
+            except (Exception, requests.exceptions.RetryError) as e:
+                msg = str(e)
+
+            logging.debug(msg)
+            return False, msg
         return wrap
 
     @response_handler
     def ping(self) -> requests.Response:
         """Check connection to the service."""
-        return requests.post(self.full_url, headers=self._generate_headers())
+        self.session.headers.update(self._generate_headers())
+        return requests.post(self.full_url)
 
     @response_handler
-    def post(self, data: dict) -> requests.Response:
-        """Send data"""
-        return requests.post(
-            self.full_url,
-            headers=self._generate_headers(self.POST_EVENT_TYPE),
-            data=json.dumps(data),
-        )
-
+    def post(self, data: dict):
+        self.session.headers.update(self._generate_headers(self.POST_EVENT_TYPE))
+        return self.session.post(self.full_url, data=json.dumps(data))
 
 class DataGenerator:
     """Generate output data"""
