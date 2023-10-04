@@ -70,7 +70,6 @@ class CVMHTTPClient:
                 else:
                     msg = (f"Status code: {response.status_code} "
                            f"Response msg: {response.text}")
-                    logging.debug(msg)
             except (Exception, requests.exceptions.RetryError) as e:
                 msg = str(e)
 
