@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <RULES>
-    <RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ENABLED="true" ID="-4175111294145341040" NAME="CiscoVM" NOT_COND_UPDATE="true" UPGRADE_PERFORMED="true">
+    <RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ENABLED="true" ID="8320568346461085183" NAME="CiscoVM Devices" NOT_COND_UPDATE="true" UPGRADE_PERFORMED="true">
         <GROUP_IN_FILTER/>
-        <INACTIVITY_TTL TTL="0" USE_DEFAULT="true"/>
-        <ADMISSION_RESOLVE_DELAY TTL="0" USE_DEFAULT="true"/>
-        <MATCH_TIMING RATE="28800" SKIP_INACTIVE="true">
-            <ADMISSION ALL="true"/>
+        <INACTIVITY_TTL TTL="259200000" USE_DEFAULT="true"/>
+        <ADMISSION_RESOLVE_DELAY TTL="30000" USE_DEFAULT="true"/>
+        <MATCH_TIMING SKIP_INACTIVE="true">
+            <SCHEDULE FREQ="1" HOUR="3" MINUTE="0" REG="1696432426290" TYPE="DAY"/>
         </MATCH_TIMING>
         <EXPRESSION EXPR_TYPE="SIMPLE">
-            <!--Rule expression. Rule name is: CiscoVM-->
-            <CONDITION EMPTY_LIST_VALUE="false" FIELD_NAME="connect_ciscovm_exported" LABEL="CiscoVM Exported" LEFT_PARENTHESIS="0" LOGIC="AND" PLUGIN_NAME="Connect" PLUGIN_UNIQUE_NAME="connect_module" PLUGIN_VESRION="1.7.4" PLUGIN_VESRION_NUMBER="17040015" RET_VALUE_ON_UKNOWN="IRRESOLVED" RIGHT_PARENTHESIS="0">
-                <FILTER CASE_SENSITIVE="false" FILTER_ID="3276644438709040142" TYPE="any">
-                    <VALUE VALUE2="Any"/>
+            <!--Rule expression. Rule name is: CiscoVM Devices-->
+            <CONDITION EMPTY_LIST_VALUE="false" FIELD_NAME="connect_ciscovm_exported" LABEL="CiscoVM Exported" LEFT_PARENTHESIS="0" LOGIC="AND" RET_VALUE_ON_UKNOWN="IRRESOLVED" RIGHT_PARENTHESIS="0">
+                <FILTER CASE_SENSITIVE="false" FILTER_ID="-1604534803806789015" TYPE="equals">
+                    <VALUE VALUE2="true"/>
                 </FILTER>
             </CONDITION>
         </EXPRESSION>
@@ -21,9 +21,7 @@
         <EXCEPTION NAME="user" UNKNOWN_EVAL="UNMATCH"/>
         <EXCEPTION NAME="group" UNKNOWN_EVAL="UNMATCH"/>
         <ORIGIN NAME="CUSTOM"/>
-        <UNMATCH_TIMING RATE="28800" SKIP_INACTIVE="true">
-            <ADMISSION ALL="true"/>
-        </UNMATCH_TIMING>
+        <UNMATCH_TIMING RATE="28800" SKIP_INACTIVE="true"/>
         <RANGE FROM="0.0.0.0" TO="255.255.255.255"/>
         <SUBNET address="::" prefix="0"/>
         <RULE_CHAIN/>
