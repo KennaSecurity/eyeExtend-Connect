@@ -26,7 +26,6 @@ import json
 from datetime import datetime, timezone
 
 import requests
-from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
