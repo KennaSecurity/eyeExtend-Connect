@@ -23,10 +23,10 @@ SOFTWARE.
 import logging
 import functools
 import json
+import time
 from datetime import datetime, timezone
 
 import requests
-from urllib3.util.retry import Retry
 
 
 class CVMHTTPClient:
@@ -34,19 +34,15 @@ class CVMHTTPClient:
     CHECK_EVENT_TYPE = "ping"
     POST_EVENT_TYPE = "job-results"
     # Create a custom Retry object with max retries set to 3
-    RETRY_STRATEGY = Retry(
-        total=3,
-        backoff_factor=1,
-        status_forcelist=[408, 429, 500, 502, 503, 504],
-        allowed_methods=["POST"]
-    )
+    RETRY_STRATEGY = {
+        "total": 3,
+        "backoff_factor": 1,
+        "status_forcelist": [408, 429, 500, 502, 503, 504]
+    }
 
     def __init__(self, url: str, uid: str, auth_token: str):
         self.full_url = f"{url.strip('/')}/{uid.strip('/').strip()}"
         self.auth_token = auth_token.strip()
-        # Create a session and mount the adapter
-        self.session = requests.Session()
-        self.session.mount("https://", requests.adapters.HTTPAdapter(max_retries=self.RETRY_STRATEGY))
 
     def _generate_headers(self, event_type: str = CHECK_EVENT_TYPE) -> dict:
         """Generate request headers"""
@@ -61,16 +57,26 @@ class CVMHTTPClient:
         @functools.wraps(func)
         def wrap(self, *args, **kwargs):
             msg = ""
-            try:
-                response = func(self, *args, **kwargs)
-                if response.status_code == 200:
-                    logging.debug(f"Data was sent to {self.full_url}")
-                    return True, msg
-                else:
-                    msg = (f"Status code: {response.status_code} "
-                           f"Response msg: {response.text}")
-            except (Exception, requests.exceptions.RetryError) as e:
-                msg = str(e)
+            for attempt in range(self.RETRY_STRATEGY["total"]):
+                try:
+                    response = func(self, *args, **kwargs)
+                    if response.status_code == 200:
+                        logging.debug(f"Data was sent to {self.full_url}")
+                        return True, msg
+                    elif response.status_code in self.RETRY_STRATEGY["status_forcelist"]:
+                        # Retry request with backoff delay
+                        delay = self.RETRY_STRATEGY["backoff_factor"] * (2 ** attempt)
+                        msg = f"Status code: {response.status_code}"
+                        logging.debug(f"{msg}. Retrying in {delay} seconds...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        msg = (f"Status code: {response.status_code} "
+                               f"Response msg: {response.text}")
+                        return False, msg
+                except Exception as e:
+                    msg = str(e)
+                    break
 
             logging.debug(msg)
             return False, msg
@@ -79,13 +85,16 @@ class CVMHTTPClient:
     @response_handler
     def ping(self) -> requests.Response:
         """Check connection to the service."""
-        self.session.headers.update(self._generate_headers())
-        return requests.post(self.full_url)
+        return requests.post(self.full_url, headers=self._generate_headers())
 
     @response_handler
-    def post(self, data: dict):
-        self.session.headers.update(self._generate_headers(self.POST_EVENT_TYPE))
-        return self.session.post(self.full_url, data=json.dumps(data))
+    def post(self, data: dict) -> requests.Response:
+        """Send data"""
+        return requests.post(
+            self.full_url,
+            headers=self._generate_headers(self.POST_EVENT_TYPE),
+            data=json.dumps(data),
+        )
 
 class DataGenerator:
     """Generate output data"""
