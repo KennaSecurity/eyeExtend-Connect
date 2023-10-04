@@ -96,6 +96,7 @@ class CVMHTTPClient:
             data=json.dumps(data),
         )
 
+
 class DataGenerator:
     """Generate output data"""
 
