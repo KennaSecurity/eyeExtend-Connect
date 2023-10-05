@@ -23,6 +23,7 @@ SOFTWARE.
 import logging
 import functools
 import json
+import time
 from datetime import datetime, timezone
 
 import requests
@@ -32,6 +33,12 @@ class CVMHTTPClient:
     """Cisco Vulnerability Management HTTP client"""
     CHECK_EVENT_TYPE = "ping"
     POST_EVENT_TYPE = "job-results"
+    # Create a custom Retry object with max retries set to 3
+    RETRY_STRATEGY = {
+        "total": 3,
+        "backoff_factor": 1,
+        "status_forcelist": [408, 429, 500, 502, 503, 504]
+    }
 
     def __init__(self, url: str, uid: str, auth_token: str):
         self.full_url = f"{url.strip('/')}/{uid.strip('/').strip()}"
@@ -50,17 +57,27 @@ class CVMHTTPClient:
         @functools.wraps(func)
         def wrap(self, *args, **kwargs):
             msg = ""
-            try:
-                response = func(self, *args, **kwargs)
-                response.raise_for_status()
-                if response.status_code == 200:
-                    logging.debug(f"Data was sent to {self.full_url}")
-                    return True, msg
-                else:
-                    msg = (f"Status code: {response.status_code} "
-                           f"Response msg: {response.text}")
-            except Exception as e:
-                msg = str(e)
+            for attempt in range(self.RETRY_STRATEGY["total"]):
+                try:
+                    response = func(self, *args, **kwargs)
+                    if response.status_code == 200:
+                        logging.debug(f"Data was sent to {self.full_url}")
+                        return True, msg
+                    elif response.status_code in self.RETRY_STRATEGY["status_forcelist"]:
+                        # Retry request with backoff delay
+                        delay = self.RETRY_STRATEGY["backoff_factor"] * (2 ** attempt)
+                        msg = f"Status code: {response.status_code}"
+                        logging.debug(f"{msg}. Retrying in {delay} seconds...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        msg = (f"Status code: {response.status_code} "
+                               f"Response msg: {response.text}")
+                        logging.debug(msg)
+                        return False, msg
+                except Exception as e:
+                    msg = str(e)
+                    break
 
             logging.debug(msg)
             return False, msg
