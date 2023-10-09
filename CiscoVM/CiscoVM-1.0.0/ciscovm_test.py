@@ -23,7 +23,7 @@ SOFTWARE.
 import logging
 
 
-logging.debug("===> Starting CiscoVM Test Script")
+logging.debug("===> Starting Cisco VM Test Script")
 
 # Defining Variables
 response = dict()
@@ -50,4 +50,4 @@ except Exception as e:
         "result_msg": str(e),
     }
 
-logging.debug("===> End CiscoVM Test Script")
+logging.debug("===> End Cisco VM Test Script")

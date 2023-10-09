@@ -17,7 +17,7 @@ To access ForeScout documentation, please refer to [https://docs.forescout.com/]
 This App includes a license file. Please review the `license.txt` file included in the distribution.
 
 ### How it works
-Forescout CiscoVM App integrates with Cisco Vulnerability Management via a Rest API.
+Forescout Cisco VM App integrates with Cisco Vulnerability Management via a Rest API.
 Required parameters:
 * URL
 * UID (a unique identifier per client and established connector)
@@ -26,7 +26,7 @@ Required parameters:
 ### Apply police
 The default policy for the connector will be automatically created as part of APP deployment. The configuration can be found in `policies/nptemplates/kenna_exported.xml`. 
 
-*Apply policies* : ForeScout Policy tab -> Add -> "CiscoVM" policy template group -> "CiscoVM Devices" template 
+*Apply policies* : ForeScout Policy tab -> Add -> "Cisco VM" policy template group -> "Cisco VM Devices" template 
 
 The user should set IP range to apply policies, the rules for the properties will be taken from conf file by default. 
 

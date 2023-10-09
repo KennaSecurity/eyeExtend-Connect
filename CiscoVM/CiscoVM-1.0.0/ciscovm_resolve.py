@@ -22,7 +22,7 @@ SOFTWARE.
 
 import logging
 
-logging.debug("===> Starting CiscoVM Script")
+logging.debug("===> Starting Cisco VM Script")
 
 # Defining Variables
 response = dict()
@@ -46,4 +46,4 @@ except Exception as e:
 finally:
     response["properties"] = properties
 
-logging.debug("===> End CiscoVM Script")
+logging.debug("===> End Cisco VM Script")

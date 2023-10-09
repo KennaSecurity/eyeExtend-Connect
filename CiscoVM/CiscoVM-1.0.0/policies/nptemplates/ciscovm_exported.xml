@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <RULES>
-    <RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ENABLED="true" ID="8320568346461085183" NAME="CiscoVM Devices" NOT_COND_UPDATE="true" UPGRADE_PERFORMED="true">
+    <RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ENABLED="true" ID="8320568346461085183" NAME="Cisco VM Devices" NOT_COND_UPDATE="true" UPGRADE_PERFORMED="true">
         <GROUP_IN_FILTER/>
         <INACTIVITY_TTL TTL="259200000" USE_DEFAULT="true"/>
         <ADMISSION_RESOLVE_DELAY TTL="30000" USE_DEFAULT="true"/>
@@ -8,8 +8,8 @@
             <SCHEDULE FREQ="1" HOUR="3" MINUTE="0" REG="1696432426290" TYPE="DAY"/>
         </MATCH_TIMING>
         <EXPRESSION EXPR_TYPE="SIMPLE">
-            <!--Rule expression. Rule name is: CiscoVM Devices-->
-            <CONDITION EMPTY_LIST_VALUE="false" FIELD_NAME="connect_ciscovm_exported" LABEL="CiscoVM Exported" LEFT_PARENTHESIS="0" LOGIC="AND" RET_VALUE_ON_UKNOWN="IRRESOLVED" RIGHT_PARENTHESIS="0">
+            <!--Rule expression. Rule name is: Cisco VM Devices-->
+            <CONDITION EMPTY_LIST_VALUE="false" FIELD_NAME="connect_ciscovm_exported" LABEL="Cisco VM Exported" LEFT_PARENTHESIS="0" LOGIC="AND" RET_VALUE_ON_UKNOWN="IRRESOLVED" RIGHT_PARENTHESIS="0">
                 <FILTER CASE_SENSITIVE="false" FILTER_ID="-1604534803806789015" TYPE="equals">
                     <VALUE VALUE2="true"/>
                 </FILTER>
