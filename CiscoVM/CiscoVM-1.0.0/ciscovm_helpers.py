@@ -35,7 +35,7 @@ class CVMHTTPClient:
     POST_EVENT_TYPE = "job-results"
     # Create a custom Retry object with max retries set to 3
     RETRY_STRATEGY = {
-        "total": 3,
+        "total": 2,
         "backoff_factor": 1,
         "status_forcelist": [408, 429, 500, 502, 503, 504]
     }
