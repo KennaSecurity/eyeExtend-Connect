@@ -39,9 +39,9 @@ try:
     if was_sent:
         properties["connect_ciscovm_exported"] = "true"
     else:
-        response["error"] = msg
+        properties["connect_ciscovm_exported"] = msg
 except Exception as e:
-    response["error"] = str(e)
+    properties["connect_ciscovm_exported"] = str(e)
     logging.error(str(e))
 finally:
     response["properties"] = properties
