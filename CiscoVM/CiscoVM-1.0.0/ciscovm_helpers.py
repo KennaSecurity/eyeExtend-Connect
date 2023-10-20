@@ -35,10 +35,11 @@ class CVMHTTPClient:
     POST_EVENT_TYPE = "job-results"
     # Create a custom Retry object with max retries set to 3
     RETRY_STRATEGY = {
-        "total": 3,
+        "total": 1,
         "backoff_factor": 1,
         "status_forcelist": [408, 429, 500, 502, 503, 504]
     }
+    TIMEOUT_SECONDS = 60
 
     def __init__(self, url: str, uid: str, auth_token: str):
         self.full_url = f"{url.strip('/')}/{uid.strip('/').strip()}"
@@ -86,7 +87,8 @@ class CVMHTTPClient:
     @response_handler
     def ping(self) -> requests.Response:
         """Check connection to the service."""
-        return requests.post(self.full_url, headers=self._generate_headers())
+        return requests.post(self.full_url, headers=self._generate_headers(),
+                             timeout=self.TIMEOUT_SECONDS)
 
     @response_handler
     def post(self, data: dict) -> requests.Response:
@@ -95,6 +97,7 @@ class CVMHTTPClient:
             self.full_url,
             headers=self._generate_headers(self.POST_EVENT_TYPE),
             data=json.dumps(data),
+            timeout=self.TIMEOUT_SECONDS
         )
 
 
