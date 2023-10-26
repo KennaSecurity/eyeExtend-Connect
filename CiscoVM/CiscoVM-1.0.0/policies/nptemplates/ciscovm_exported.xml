@@ -38,8 +38,8 @@
                 </EXPRESSION>
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
-                        <START Class="Delayed" TIMEPERIOD="10 MINUTE"/>
-                        <OCCURENCE onEvery="15 MINUTE" onStart="true"/>
+                        <START Class="Immediately"/>
+                        <OCCURENCE onEvery="4 HOUR" onStart="true"/>
                     </SCHEDULE>
                 </ACTION>
                 <EXCEPTION NAME="nbthost" UNKNOWN_EVAL="UNMATCH"/>
@@ -74,7 +74,7 @@
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
                         <START Class="Immediately"/>
-                        <OCCURENCE onEvery="5 MINUTE" onStart="true"/>
+                        <OCCURENCE onEvery="4 HOUR" onStart="true"/>
                     </SCHEDULE>
                 </ACTION>
                 <EXCEPTION NAME="nbthost" UNKNOWN_EVAL="UNMATCH"/>
@@ -95,8 +95,10 @@
                 </EXPRESSION>
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
-                        <START Class="Delayed" TIMEPERIOD="30 MINUTE"/>
-                        <OCCURENCE onEvery="30 MINUTE" onStart="true"/>
+                        <START Class="Immediately"/>
+                        <OCCURENCE onStart="true">
+                            <FSSCHEDULE Class="FSDailySchedule" FREQ="1" HOUR="0" MINUTE="0" REGTIME="1698323177350"/>
+                        </OCCURENCE>
                     </SCHEDULE>
                 </ACTION>
                 <EXCEPTION NAME="nbthost" UNKNOWN_EVAL="UNMATCH"/>
@@ -117,8 +119,10 @@
                 </EXPRESSION>
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
-                        <START Class="Delayed" TIMEPERIOD="30 MINUTE"/>
-                        <OCCURENCE onEvery="30 MINUTE" onStart="true"/>
+                        <START Class="Immediately"/>
+                        <OCCURENCE onStart="true">
+                            <FSSCHEDULE Class="FSDailySchedule" FREQ="1" HOUR="0" MINUTE="0" REGTIME="1698323155628"/>
+                        </OCCURENCE>
                     </SCHEDULE>
                 </ACTION>
                 <EXCEPTION NAME="nbthost" UNKNOWN_EVAL="UNMATCH"/>
