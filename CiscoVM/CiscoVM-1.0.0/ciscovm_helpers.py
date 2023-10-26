@@ -22,6 +22,7 @@ SOFTWARE.
 
 import logging
 import functools
+import hashlib
 import json
 import time
 from datetime import datetime, timezone
@@ -39,7 +40,7 @@ class CVMHTTPClient:
         "backoff_factor": 1,
         "status_forcelist": [408, 429, 500, 502, 503, 504]
     }
-    TIMEOUT_SECONDS = 60
+    TIMEOUT_SECONDS = 100
 
     def __init__(self, url: str, uid: str, auth_token: str):
         self.full_url = f"{url.strip('/')}/{uid.strip('/').strip()}"
@@ -53,44 +54,31 @@ class CVMHTTPClient:
             "Authorization": f"Bearer {self.auth_token}",
         }
 
-    def response_handler(func):
-        """Handle any request errors and logging them."""
+    def with_retries(func):
+        """Adds retry logic to request"""
         @functools.wraps(func)
         def wrap(self, *args, **kwargs):
-            msg = ""
             for attempt in range(self.RETRY_STRATEGY["total"]):
-                try:
-                    response = func(self, *args, **kwargs)
-                    if response.status_code == 200:
-                        logging.debug(f"Data was sent to {self.full_url}")
-                        return True, msg
-                    elif response.status_code in self.RETRY_STRATEGY["status_forcelist"]:
-                        # Retry request with backoff delay
-                        delay = self.RETRY_STRATEGY["backoff_factor"] * (2 ** attempt)
-                        msg = f"Status code: {response.status_code}"
-                        logging.debug(f"{msg}. Retrying in {delay} seconds...")
-                        time.sleep(delay)
-                        continue
-                    else:
-                        msg = (f"Status code: {response.status_code} "
-                               f"Response msg: {response.text}")
-                        logging.debug(msg)
-                        return False, msg
-                except Exception as e:
-                    msg = str(e)
-                    break
-
-            logging.debug(msg)
-            return False, msg
+                response = func(self, *args, **kwargs)
+                if response.status_code in self.RETRY_STRATEGY["status_forcelist"]:
+                    # Retry request with backoff delay
+                    delay = self.RETRY_STRATEGY["backoff_factor"] * (2 ** attempt)
+                    msg = f"Status code: {response.status_code}"
+                    logging.debug(f"{msg}. Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                    continue
+                break
+            response.raise_for_status()
+            return response
         return wrap
 
-    @response_handler
+    @with_retries
     def ping(self) -> requests.Response:
-        """Check connection to the service."""
+        """Check connection to the service"""
         return requests.post(self.full_url, headers=self._generate_headers(),
                              timeout=self.TIMEOUT_SECONDS)
 
-    @response_handler
+    @with_retries
     def post(self, data: dict) -> requests.Response:
         """Send data"""
         return requests.post(
@@ -104,6 +92,7 @@ class CVMHTTPClient:
 class DataGenerator:
     """Generate output data"""
 
+    TS_KEY = "last_seen_time"
     TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     FS_PROP_FOR_CVM = (
         "mac",
@@ -113,17 +102,39 @@ class DataGenerator:
         "vendor",
         "prim_classification",
     )
+    HASH_KEY = "connect_ciscovm_exported_hash"
 
     def __init__(self, fs_data: dict):
-        self._fs_data = fs_data
+        self._payload = None
+        self.payload_hash = None
+        self.exported_hash = fs_data.get(self.HASH_KEY)
 
-    def generate(self) -> dict:
+        self.set_payload(fs_data)
+        self.set_payload_hash()
+
+    """Payload getter"""
+    def get_payload(self, add_timestamp: bool=False):
+        if add_timestamp is True:
+            return {**self._payload, **{self.TS_KEY: self.generate_timestamp()}}
+        return self._payload
+
+    """Payload setter"""
+    def set_payload(self, data):
         """Generate output JSON"""
-        data = dict()
+        payload = dict()
         for field_name in self.FS_PROP_FOR_CVM:
-            data[field_name] = self._fs_data.get(field_name)
+            payload[field_name] = data.get(field_name)
 
-        data["last_seen_time"] = (
-            datetime.now(timezone.utc).strftime(self.TS_FORMAT)
-        )
-        return data
+        self._payload = payload
+
+    """Generate current timestamp"""
+    def generate_timestamp(self):
+        return datetime.now(timezone.utc).strftime(self.TS_FORMAT)
+
+    """Payload hash setter"""
+    def set_payload_hash(self):
+        self.payload_hash = hashlib.sha256(json.dumps(self._payload, sort_keys=True).encode()).hexdigest()
+
+    """Define if previous payload hash differs from the current"""
+    def payload_change_detected(self):
+        return self.payload_hash != self.exported_hash

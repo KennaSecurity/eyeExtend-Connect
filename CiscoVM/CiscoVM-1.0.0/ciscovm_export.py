@@ -21,29 +21,38 @@ SOFTWARE.
 """
 
 import logging
-
-logging.debug("===> Starting Cisco VM Script")
+import time
 
 # Defining Variables
 response = dict()
-properties = dict(connect_ciscovm_exported="false")
+properties = dict()
+action_status = dict()
 
 try:
-    url = params["connect_ciscovm_url"]
-    token = params["connect_ciscovm_token"]
-    uid = params["connect_ciscovm_uid"]
-    client = ciscovm_helpers.CVMHTTPClient(url, uid, token)
-    payload = ciscovm_helpers.DataGenerator(params).generate()
-    logging.debug(f"Output data: {payload}")
-    was_sent, msg = client.post(payload)
-    if was_sent:
-        properties["connect_ciscovm_exported"] = "true"
+    data_generator = ciscovm_helpers.DataGenerator(params)
+    if data_generator.payload_change_detected():
+        url = params["connect_ciscovm_url"]
+        token = params["connect_ciscovm_token"]
+        uid = params["connect_ciscovm_uid"]
+        client = ciscovm_helpers.CVMHTTPClient(url, uid, token)
+        client.post(data_generator.get_payload(add_timestamp=True))
+
+        properties["connect_ciscovm_exported_hash"] = data_generator.payload_hash
+        properties["connect_ciscovm_exported_state"] = "Exported"
+        action_status["status"] = "Exported"
     else:
-        properties["connect_ciscovm_exported"] = msg
+        properties["connect_ciscovm_exported_state"] = "Unchanged"
+        action_status["status"] = "Unchanged"
+
+    response["succeeded"] = True
 except Exception as e:
-    properties["connect_ciscovm_exported"] = str(e)
+    properties["connect_ciscovm_exported_state"] = f"Failed: {str(e)}"
+    action_status["status"] = "Failed"
+    response["succeeded"] = False
+    response["troubleshooting"] = str(e)
     logging.error(str(e))
 finally:
+    action_status["time"] = int(time.time())
     response["properties"] = properties
+    logging.debug(f"{action_status['status']}: {data_generator.get_payload()}")
 
-logging.debug("===> End Cisco VM Script")

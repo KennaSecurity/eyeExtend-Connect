@@ -20,28 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
-
-
-logging.debug("===> Starting Cisco VM Test Script")
+import time
 
 # Defining Variables
 response = dict()
+properties = dict()
+action_status = dict()
 
-try:
-    url = params["connect_ciscovm_url"]
-    token = params["connect_ciscovm_token"]
-    uid = params["connect_ciscovm_uid"]
-    client = ciscovm_helpers.CVMHTTPClient(url=url, auth_token=token, uid=uid)
-    client_response = client.ping()
-    response = {
-        "succeeded": True,
-        "result_msg": f"Connected to '{client.full_url}'.",
-    }
-except Exception as e:
-    response = {
-        "succeeded": False,
-        "result_msg": str(e),
-    }
-
-logging.debug("===> End Cisco VM Test Script")
+properties["connect_ciscovm_exported_state"] = "Pending"
+properties["connect_ciscovm_exported_hash"] = ""
+response["succeeded"] = True
+response["properties"] = properties
+action_status["time"] = int(time.time())
+action_status["status"] = "Reset"
