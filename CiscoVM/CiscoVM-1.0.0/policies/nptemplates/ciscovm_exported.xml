@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <RULES>
-    <RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ENABLED="true" ID="4354083306395716349" NAME="Cisco VM Export" NOT_COND_UPDATE="true" UPGRADE_PERFORMED="true">
+    <RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ENABLED="true" ID="-2674745419395805238" NAME="Cisco VM Export" NOT_COND_UPDATE="true" UPGRADE_PERFORMED="true">
         <GROUP_IN_FILTER/>
         <INACTIVITY_TTL TTL="259200000" USE_DEFAULT="true"/>
         <ADMISSION_RESOLVE_DELAY TTL="30000" USE_DEFAULT="true"/>
@@ -15,7 +15,7 @@
         <RANGE FROM="0.0.0.0" TO="255.255.255.255"/>
         <SUBNET address="::" prefix="0"/>
         <RULE_CHAIN>
-            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="-6794391773002372831" NAME="Pending" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
+            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="5196131074053060403" NAME="Pending" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
                 <MATCH_TIMING SKIP_INACTIVE="true"/>
                 <EXPRESSION EXPR_TYPE="OR">
                     <!--Rule expression. Rule name is: Pending-->
@@ -38,7 +38,7 @@
                 </EXPRESSION>
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
-                        <START Class="Immediately"/>
+                        <START Class="Delayed" TIMEPERIOD="10 MINUTE"/>
                         <OCCURENCE onEvery="4 HOUR" onStart="true"/>
                     </SCHEDULE>
                 </ACTION>
@@ -48,7 +48,7 @@
                 <EXCEPTION NAME="mac" UNKNOWN_EVAL="UNMATCH"/>
                 <EXCEPTION NAME="group" UNKNOWN_EVAL="UNMATCH"/>
             </INNER_RULE>
-            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="3874809667269933152" NAME="Failed" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
+            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="2125480135809851289" NAME="Failed" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
                 <MATCH_TIMING SKIP_INACTIVE="true"/>
                 <EXPRESSION EXPR_TYPE="AND">
                     <!--Rule expression. Rule name is: Failed-->
@@ -73,7 +73,7 @@
                 </EXPRESSION>
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
-                        <START Class="Immediately"/>
+                        <START Class="Delayed" TIMEPERIOD="10 MINUTE"/>
                         <OCCURENCE onEvery="4 HOUR" onStart="true"/>
                     </SCHEDULE>
                 </ACTION>
@@ -83,7 +83,7 @@
                 <EXCEPTION NAME="mac" UNKNOWN_EVAL="UNMATCH"/>
                 <EXCEPTION NAME="group" UNKNOWN_EVAL="UNMATCH"/>
             </INNER_RULE>
-            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="4332168407197402158" NAME="Exported" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
+            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="-7084003240895224023" NAME="Exported" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
                 <MATCH_TIMING SKIP_INACTIVE="true"/>
                 <EXPRESSION EXPR_TYPE="SIMPLE">
                     <!--Rule expression. Rule name is: Exported-->
@@ -96,7 +96,7 @@
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
                         <START Class="Immediately"/>
-                        <OCCURENCE onStart="true">
+                        <OCCURENCE onStart="false">
                             <FSSCHEDULE Class="FSDailySchedule" FREQ="1" HOUR="0" MINUTE="0" REGTIME="1698323177350"/>
                         </OCCURENCE>
                     </SCHEDULE>
@@ -107,7 +107,7 @@
                 <EXCEPTION NAME="mac" UNKNOWN_EVAL="UNMATCH"/>
                 <EXCEPTION NAME="group" UNKNOWN_EVAL="UNMATCH"/>
             </INNER_RULE>
-            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="-4717701282332104196" NAME="Unchanged" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
+            <INNER_RULE APP_VERSION="8.4.2-668" CACHE_TTL="259200" CACHE_TTL_SYNCED="true" CLASSIFICATION="REG_STATUS" DESCRIPTION="" ID="8727410241540510379" NAME="Unchanged" NOT_COND_UPDATE="true" RECHECK_MAIN_RULE_DEF="false">
                 <MATCH_TIMING SKIP_INACTIVE="true"/>
                 <EXPRESSION EXPR_TYPE="SIMPLE">
                     <!--Rule expression. Rule name is: Unchanged-->
@@ -120,9 +120,15 @@
                 <ACTION DISABLED="false" NAME="connect_ciscovm_export">
                     <SCHEDULE>
                         <START Class="Immediately"/>
-                        <OCCURENCE onStart="true">
+                        <OCCURENCE onStart="false">
                             <FSSCHEDULE Class="FSDailySchedule" FREQ="1" HOUR="0" MINUTE="0" REGTIME="1698323155628"/>
                         </OCCURENCE>
+                    </SCHEDULE>
+                </ACTION>
+                <ACTION DISABLED="false" NAME="connect_ciscovm_reset">
+                    <SCHEDULE>
+                        <START Class="Delayed" TIMEPERIOD="4 WEEK"/>
+                        <OCCURENCE onEvery="4 WEEK" onStart="true"/>
                     </SCHEDULE>
                 </ACTION>
                 <EXCEPTION NAME="nbthost" UNKNOWN_EVAL="UNMATCH"/>
