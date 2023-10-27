@@ -46,7 +46,7 @@ try:
 
     response["succeeded"] = True
 except Exception as e:
-    properties["connect_ciscovm_exported_state"] = f"Failed: {str(e)}"
+    properties["connect_ciscovm_exported_state"] = "Failed"
     action_status["status"] = "Failed"
     response["succeeded"] = False
     response["troubleshooting"] = str(e)

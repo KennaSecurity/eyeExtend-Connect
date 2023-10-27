@@ -1,8 +1,8 @@
-# Cisco Vulnerability Management (CVM) App
+# Cisco Vulnerability Management (Cisco VM) App
 version: 1.0.0
 
 ### About the App
-The App is written to integrate with Cisco Vulnerability Management
+The app allows to export endpoints data to Cisco Vulnerability Management.
 
 ### Requirements
 The App supports:
@@ -17,21 +17,43 @@ To access ForeScout documentation, please refer to [https://docs.forescout.com/]
 This App includes a license file. Please review the `license.txt` file included in the distribution.
 
 ### How it works
-Forescout Cisco VM App integrates with Cisco Vulnerability Management via a Rest API.
-Required parameters:
-* URL
-* UID (a unique identifier per client and established connector)
-* Bearer Token 
+Forescout Cisco VM App exports endpoints data to Cisco Vulnerability Management REST API.
+The app contains Policy template that controls the export process by applying Export or Reset actions.
 
-### Apply police
-The default policy for the connector will be automatically created as part of APP deployment. The configuration can be found in `policies/nptemplates/kenna_exported.xml`. 
+#### Export flow
+1. By default, the policy export data only for new endpoints or endpoints that were changed from the last export. 
+By default, the recheck for the changed endpoints happens every day at 12 AM (Forescout Appliance time zone).  
+2. If export for endpoint fails, the app retries an export in 10 minutes. If the export fails again, the app attempts reexport each 2 hours.
+3. In case if endpoint doesn't have any changes for the exported properties for 1 month, it's reexported.
+4. Endpoints that have Exported and Unchanged state are also following daily recheck schedule. They are not moved to Pending state before the recheck to avoid redundant execution of Reset action.
 
-*Apply policies* : ForeScout Policy tab -> Add -> "Cisco VM" policy template group -> "Cisco VM Devices" template 
+#### Exported properties mapping
+Forescout        | Cisco Vulnerability Management
+------------- | -----------------------------
+IPv4 Address | IP Address
+DHCP Hostname | Hostname
+MAC Address | MAC Address
+Function | "FS Function" tag
+Vendor and Model | "FS Vendor and Model" tag
+NIC Vendor | "FS NIC Vendor" tag
 
-The user should set IP range to apply policies, the rules for the properties will be taken from conf file by default. 
+#### Properties
+Property        | Description
+------------- | -----------------------------
+Cisco VM Exported State | Defines the state of the latest export (Pending, Failed, Exported, Unchanged)
+Cisco VM Exported Hash | Hash of the latest exported payload
 
-### Logs
-```
-ssh <USER>@<FORESCOUT_PLATFORM_IP>
-tail -n50 /usr/local/forescout/plugin/connect_module/python_logs/python_server.log
-```
+### Configuration
+Before starting configuration process, Forescout connector must be created in Cisco Vulnerability Management UI.
+The connector generates configuration parameters that are required to configure Cisco VM eyeExtend Connect app.
+
+#### Configure App
+Parameters required during the configuration process:
+* URL - URL of Cisco VM Webhook which saves the exported data to Cisco VM environment
+* UID - a unique identifier defined per client per connector
+* AUTH Token - Token for Cisco VM REST API
+
+#### Apply policy
+Policy must be added manually after the app is imported and configured.
+1. Go to ForeScout Policy tab -> Add -> "Cisco VM" policy template group -> "Cisco VM Export" template
+2. Follow configuration instructions. The user must set IP range of endpoints that should be exported. Other configuration steps are optional as the template includes default configuration. 
