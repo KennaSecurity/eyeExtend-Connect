@@ -20,30 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
-
-logging.debug("===> Starting Cisco VM Script")
+import time
 
 # Defining Variables
 response = dict()
-properties = dict(connect_ciscovm_exported="false")
+properties = dict()
+action_status = dict()
 
-try:
-    url = params["connect_ciscovm_url"]
-    token = params["connect_ciscovm_token"]
-    uid = params["connect_ciscovm_uid"]
-    client = ciscovm_helpers.CVMHTTPClient(url, uid, token)
-    payload = ciscovm_helpers.DataGenerator(params).generate()
-    logging.debug(f"Output data: {payload}")
-    was_sent, msg = client.post(payload)
-    if was_sent:
-        properties["connect_ciscovm_exported"] = "true"
-    else:
-        properties["connect_ciscovm_exported"] = msg
-except Exception as e:
-    properties["connect_ciscovm_exported"] = str(e)
-    logging.error(str(e))
-finally:
-    response["properties"] = properties
-
-logging.debug("===> End Cisco VM Script")
+properties["connect_ciscovm_exported_state"] = "Pending"
+properties["connect_ciscovm_exported_hash"] = ""
+response["succeeded"] = True
+response["properties"] = properties
+action_status["time"] = int(time.time())
+action_status["status"] = "Reset"
